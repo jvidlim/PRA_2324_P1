@@ -9,30 +9,6 @@ template <typename T> class ListArray : public List<T>{
 		int max;
 		int n;
 		static const int MINSIZE = 2;
-	public:
-		ListArray(){
-			arr = new T[MINSIZE];
-			n = 0;
-			max = 2;
-		}
-
-		~ListArray(){
-			delete[] arr;
-		}
-
-		T operator[](int pos){
-			if(pos < 0 || pos > max) throw out_of_range("Posicion del array no valida\n");
-			else{
-				return arr[pos];		
-			}
-		}
-
-		friend ostream& operator <<(ostream &out, const ListArray<T> &list){
-			for(int i = 0; i<max; i++){
-				out << list[i] << " ";
-			}
-			return out;
-		}
 
 		void resize(int new_size){
 			T *nuevo = new T[new_size];
@@ -44,23 +20,47 @@ template <typename T> class ListArray : public List<T>{
 			max = new_size;
 		}
 
-		void insert(int pos, T e) override{
-			n++;
-				
-			T *nuevo = new T[max];
+	public:
+		ListArray(){
+			arr = new T[MINSIZE];
+			n = 0;
+			max = MINSIZE;
+		}
 
-			for(int i = 0; i<pos; i++){
-				nuevo[i] = max[i]; 
-			}
-
-			nuevo[pos] = e;
-
-			for(int i = pos+1; i<n; i++){
-				nuevo[i] = arr[i-1];
-			}
-
+		~ListArray(){
 			delete[] arr;
-			arr = nuevo;
+		}
+
+		T operator[](int pos){
+			if(pos < 0 || pos >= n) throw out_of_range("Posicion del array no valida");
+			else{
+				return arr[pos];		
+			}
+		}
+
+		friend ostream& operator <<(ostream &out, const ListArray<T> &list){
+			
+			out << "List => [\n";
+			
+			for(int i = 0; i<list.n; i++){
+				out << list.arr[i] << "\n";
+			}
+
+			out << "]";
+			
+			return out;
+		}
+
+		void insert(int pos, T e) override{
+			if(pos < 0 || pos > max) throw out_of_range("Posicion del array no valida");
+			n++;
+			if(n > max) resize(n);
+
+			for(int i = n-1; i>pos; i--){
+				arr[i] = arr[i-1];
+			}
+
+			arr[pos] = e;
 
 		}
 
@@ -74,26 +74,44 @@ template <typename T> class ListArray : public List<T>{
 
 		T remove(int pos) override{
 
-			if(pos < 0 || pos >= n) throw out_of_range("Posición no válida del array\n");
+			if(pos < 0 || pos >= n) throw out_of_range("Posicion del array no valida");
+			
+			max--;
 
 			T removed = arr[pos];
 			T* nuevo = new T[max];
 
-			for(int i = 0; i<pos; i++){
-				nuevo[i] = arr[i];
+			for(int i = 0; i<n-1; i++){
+				if(i < pos) nuevo[i] = arr[i];
+				else nuevo[i] = arr[i+1];
 			}	
-			
-			for(int i = pos+1; i<n; i++){
-				nuevo[i] = arr[i];
-			}
-			
+
 			delete[] arr;
 			n--;
 			arr = nuevo;
+
+			return removed;
 		}
 
 		T get(int pos) override{
-			
+			if(pos < 0 || pos>=n) throw out_of_range("Posición no válida del array");
+			return arr[pos];
+		}
+
+		int search(int k) override{
+			for(int i = 0; i<n;++i){
+				if(arr[i] == k) return i;
+			}
+			return -1;
+		}
+
+		bool empty() override{
+			if(n == 0) return true;
+			else return false;
+		}
+
+		int size() override{
+			return n;
 		}
 
 
